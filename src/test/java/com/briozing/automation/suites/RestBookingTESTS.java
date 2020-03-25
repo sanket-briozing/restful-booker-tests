@@ -41,7 +41,7 @@ public class RestBookingTESTS {
         return new Object[][]{
                 {"Eric","Smith"}
         };
-    }hit
+    }
 
     @Test(groups = {"smoke","getall"})
     public void verify_get_all_booking_id() {
