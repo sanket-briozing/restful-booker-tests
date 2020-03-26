@@ -1,0 +1,11 @@
+{
+  "firstname" : "sandeep",
+  "lastname" : "khanorkar",
+  "totalprice" : 2000,
+  "depositpaid" : true,
+  "bookingdates" : {
+    "checkin" : "2015-08-18",
+    "checkout" : "2019-02-05"
+  },
+  "additionalneeds" : "Alcohol"
+}

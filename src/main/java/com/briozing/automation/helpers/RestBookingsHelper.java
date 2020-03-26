@@ -4,6 +4,7 @@ import com.briozing.automation.common.Configuration;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.json.*;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
@@ -48,5 +49,23 @@ public class RestBookingsHelper {
         return response;
     }
 
+    public Response getIdByDate(String checkIn,String checkOut, int status) {
+        final Response response = given(requestSpecification)
+                .queryParam("checkin",checkIn)
+                .queryParam("checkout",checkOut)
+                .get("/booking");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(status);
+        return response;
+    }
+
+    public Response createBooking(JSONObject requestParams, int status) {
+        final Response response = given(requestSpecification)
+                .header("Content-Type", "application/json")
+                .body(requestParams.toString())
+                .post("/booking");
+        response.then().assertThat().statusCode(status);
+        return response;
+    }
 
 }
