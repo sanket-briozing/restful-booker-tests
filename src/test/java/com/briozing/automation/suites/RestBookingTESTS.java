@@ -6,11 +6,15 @@ import com.briozing.automation.models.BookingDetailsDTO;
 import com.briozing.automation.models.BookingIdDTO;
 import com.briozing.automation.models.CreateBookingDTO;
 import com.briozing.automation.utils.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.json.*;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -142,6 +146,30 @@ public class RestBookingTESTS {
         }
     }
 
+    @Test(groups={"smoke","postjson"})
+    public void verify_post_json() {
+        try {
+//            System.out.println(System.getProperty("user.dir"));
+
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/CreateBooking.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            //JSON file to Java object
+            BookingDetailsDTO bookingDetailsDTO = mapper.readValue(fileInputStream, BookingDetailsDTO.class);
+
+            System.out.println("DTO : " + bookingDetailsDTO.toString());
+            logger.info("-------------Test Started ------------");
+            final Map<String, Boolean> testSteps = new HashMap<>();
+            testSteps.put(TestSteps.STEP_POST_JSON.name(), true);
+            validatePostJson(testSteps, bookingDetailsDTO);
+            logger.info("--------------Test Ended -------------");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.info(ex);
+            AppAssert.assertTrue(false, "Failure Creating booking id");
+        }
+    }
+
     private void validateGetAllIdTest(Map<String, Boolean> testSteps) throws Exception {
         if (null != testSteps.get(TestSteps.STEP_GET_ALL_BOOKING_ID.name()) && testSteps.get(TestSteps.STEP_GET_ALL_BOOKING_ID.name())) {
             MainUtils.stepLog(logger, TestSteps.STEP_GET_ALL_BOOKING_ID.name());
@@ -185,6 +213,16 @@ public class RestBookingTESTS {
                     .getBody().as(CreateBookingDTO.class);
             TestConstants.bookingId=response.getBookingid().toString();
             validationHelper.verify_create_booking(response,requestParams);
+        }
+    }
+
+    private void validatePostJson(Map<String, Boolean> testSteps,BookingDetailsDTO bookingDetailsDTO) throws Exception {
+        if (null != testSteps.get(TestSteps.STEP_POST_JSON.name()) && testSteps.get(TestSteps.STEP_POST_JSON.name())) {
+            MainUtils.stepLog(logger, TestSteps.STEP_POST_JSON.name());
+            final CreateBookingDTO response = restbookingsHelper.postJson(bookingDetailsDTO,200)
+                    .getBody().as(CreateBookingDTO.class);
+            TestConstants.postBookingId=response.getBookingid().toString();
+            validationHelper.verify_post_json(response,bookingDetailsDTO);
         }
     }
 }

@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.json.*;
 
 import javax.xml.ws.Response;
+import java.io.FileInputStream;
 import java.util.Map;
 
 public class TestValidationHelper {
@@ -63,6 +64,20 @@ public class TestValidationHelper {
         AppAssert.assertEqual(actualResponse.getBooking().getBookingdates().getCheckin(), requestParams.getJSONObject("bookingdates").getString("checkin") ,"CheckIn Date :");
         AppAssert.assertEqual(actualResponse.getBooking().getBookingdates().getCheckout(), requestParams.getJSONObject("bookingdates").getString("checkout") ,"CheckOut Date :");
         AppAssert.assertEqual(actualResponse.getBooking().getAdditionalneeds(), requestParams.getString("additionalneeds") ,"Additional needs :");
+    }
+
+    public void verify_post_json(CreateBookingDTO actualResponse, BookingDetailsDTO bookingDetailsDTO) {
+        logger.info("Booking id :- " + actualResponse.getBookingid());
+        AppAssert.assertTrue(actualResponse.getBookingid() != null, "Booking is not null");
+        logger.info("Actual First Name :- " + actualResponse.getBooking().getFirstname());
+        logger.info("Expected First Name :- " + bookingDetailsDTO.getFirstname());
+        AppAssert.assertEqual(actualResponse.getBooking().getFirstname(), bookingDetailsDTO.getFirstname(),"First Name :");
+        AppAssert.assertEqual(actualResponse.getBooking().getLastname(), bookingDetailsDTO.getLastname(),"Last Name :");
+        AppAssert.assertEqual(actualResponse.getBooking().getDepositpaid(), bookingDetailsDTO.getDepositpaid(),"Deposit Paid :");
+        AppAssert.assertEqual(actualResponse.getBooking().getTotalprice(), bookingDetailsDTO.getTotalprice(),"Total Price :");
+        AppAssert.assertEqual(actualResponse.getBooking().getBookingdates().getCheckin(), bookingDetailsDTO.getBookingdates().getCheckin(),"CheckIn Date :");
+        AppAssert.assertEqual(actualResponse.getBooking().getBookingdates().getCheckout(), bookingDetailsDTO.getBookingdates().getCheckout() ,"CheckOut Date :");
+        AppAssert.assertEqual(actualResponse.getBooking().getAdditionalneeds(), bookingDetailsDTO.getAdditionalneeds() ,"Additional needs :");
     }
 }
 

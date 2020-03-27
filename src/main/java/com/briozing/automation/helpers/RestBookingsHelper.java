@@ -1,10 +1,15 @@
 package com.briozing.automation.helpers;
 
 import com.briozing.automation.common.Configuration;
+import com.briozing.automation.models.BookingDetailsDTO;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.apache.commons.io.IOUtils;
 import org.json.*;
+
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
@@ -64,6 +69,17 @@ public class RestBookingsHelper {
                 .header("Content-Type", "application/json")
                 .body(requestParams.toString())
                 .post("/booking");
+        response.then().assertThat().statusCode(status);
+        return response;
+    }
+
+    public Response postJson(BookingDetailsDTO bookingDetailsDTO, int status) throws IOException {
+        System.out.println("DTO in :" + bookingDetailsDTO.toString());
+        final Response response = given(requestSpecification)
+                .header("Content-Type", "application/json")
+                .body(bookingDetailsDTO)
+                .post("/booking");
+        response.prettyPrint();
         response.then().assertThat().statusCode(status);
         return response;
     }
