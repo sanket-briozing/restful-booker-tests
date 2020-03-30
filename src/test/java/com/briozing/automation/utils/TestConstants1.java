@@ -1,6 +1,6 @@
 package com.briozing.automation.utils;
 
-public class TestConstants {
+public class TestConstants1 {
 
     public static String bookingId;
 

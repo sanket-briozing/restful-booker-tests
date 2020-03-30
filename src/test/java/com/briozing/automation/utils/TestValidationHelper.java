@@ -4,10 +4,11 @@ import com.briozing.automation.factory.Log4JFactory;
 import com.briozing.automation.models.BookingDetailsDTO;
 import com.briozing.automation.models.BookingIdDTO;
 import com.briozing.automation.models.CreateBookingDTO;
+import com.briozing.automation.models.PatchRequestDTO;
+import io.restassured.response.Response;
 import org.apache.log4j.Logger;
 import org.json.*;
 
-import javax.xml.ws.Response;
 import java.io.FileInputStream;
 import java.util.Map;
 
@@ -78,6 +79,32 @@ public class TestValidationHelper {
         AppAssert.assertEqual(actualResponse.getBooking().getBookingdates().getCheckin(), bookingDetailsDTO.getBookingdates().getCheckin(),"CheckIn Date :");
         AppAssert.assertEqual(actualResponse.getBooking().getBookingdates().getCheckout(), bookingDetailsDTO.getBookingdates().getCheckout() ,"CheckOut Date :");
         AppAssert.assertEqual(actualResponse.getBooking().getAdditionalneeds(), bookingDetailsDTO.getAdditionalneeds() ,"Additional needs :");
+    }
+
+    public void verify_get_token(Response actualResponse) {
+        logger.info("Token :- " + actualResponse.jsonPath().get("token"));
+        AppAssert.assertTrue(actualResponse.jsonPath().get("token") != null, "Token is not null");
+    }
+
+    public void verify_update_booking(BookingDetailsDTO actualResponse, BookingDetailsDTO bookingDetailsDTO) {
+        logger.info("Requested First Name :- " + bookingDetailsDTO.getFirstname());
+        logger.info("Response First Name :- " + actualResponse.getFirstname());
+        AppAssert.assertEqual(actualResponse.getFirstname(), bookingDetailsDTO.getFirstname(),"First Name :");
+        AppAssert.assertEqual(actualResponse.getLastname(), bookingDetailsDTO.getLastname(),"Last Name :");
+        AppAssert.assertEqual(actualResponse.getDepositpaid(), bookingDetailsDTO.getDepositpaid(),"Deposit Paid :");
+        AppAssert.assertEqual(actualResponse.getTotalprice(), bookingDetailsDTO.getTotalprice(),"Total Price :");
+        AppAssert.assertEqual(actualResponse.getBookingdates().getCheckin(), bookingDetailsDTO.getBookingdates().getCheckin(),"CheckIn Date :");
+        AppAssert.assertEqual(actualResponse.getBookingdates().getCheckout(), bookingDetailsDTO.getBookingdates().getCheckout() ,"CheckOut Date :");
+        AppAssert.assertEqual(actualResponse.getAdditionalneeds(), bookingDetailsDTO.getAdditionalneeds() ,"Additional needs :");
+    }
+
+    public void verify_partial_update_booking(BookingDetailsDTO actualResponse, PatchRequestDTO patchRequestDTO) {
+        logger.info("Actual First Name :- " + actualResponse.getFirstname());
+        logger.info("Expected First Name :- " + patchRequestDTO.getFirstname());
+        logger.info("Actual Last Name :- " + actualResponse.getLastname());
+        logger.info("Expected Last Name :- " + patchRequestDTO.getLastname());
+        AppAssert.assertEqual(actualResponse.getFirstname(), patchRequestDTO.getFirstname(),"First Name :");
+        AppAssert.assertEqual(actualResponse.getLastname(), patchRequestDTO.getLastname(),"Last Name :");
     }
 }
 

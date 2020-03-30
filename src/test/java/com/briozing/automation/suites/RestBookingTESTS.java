@@ -2,11 +2,11 @@ package com.briozing.automation.suites;
 
 import com.briozing.automation.factory.Log4JFactory;
 import com.briozing.automation.helpers.RestBookingsHelper;
-import com.briozing.automation.models.BookingDetailsDTO;
-import com.briozing.automation.models.BookingIdDTO;
-import com.briozing.automation.models.CreateBookingDTO;
+import com.briozing.automation.models.*;
 import com.briozing.automation.utils.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -23,6 +23,7 @@ public class RestBookingTESTS {
     private Logger logger = Log4JFactory.getLogger(this.getClass().getSimpleName());
     private RestBookingsHelper restbookingsHelper;
     private TestValidationHelper validationHelper;
+    private JsonPath jsonPath;
     @BeforeClass(alwaysRun = true)
     public void setup() {
         restbookingsHelper = new RestBookingsHelper();
@@ -33,7 +34,15 @@ public class RestBookingTESTS {
     public Object[][] bookingIdDP() {
 
         return new Object[][]{
-                {TestConstants.bookingId}
+                {TestConstants1.bookingId}
+        };
+    }
+
+    @DataProvider(name = "booking-ids-dp")
+    public Object[][] bookingIdsDP() {
+
+        return new Object[][]{
+                {"6"}
         };
     }
 
@@ -170,6 +179,88 @@ public class RestBookingTESTS {
         }
     }
 
+    @Test(groups={"smoke","gettoken"})
+    public void verify_get_token() {
+        try {
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/GetToken.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            GetTokenDTO getTokenDTO = mapper.readValue(fileInputStream, GetTokenDTO.class);
+
+            System.out.println("DTO : " + getTokenDTO.toString());
+            logger.info("-------------Test Started ------------");
+            final Map<String, Boolean> testSteps = new HashMap<>();
+            testSteps.put(TestSteps.STEP_GET_TOKEN.name(), true);
+            validateGetToken(testSteps, getTokenDTO);
+            logger.info("--------------Test Ended -------------");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.info(ex);
+            AppAssert.assertTrue(false, "Failure getting auth token");
+        }
+    }
+
+    @Test(groups={"smoke","update"},dataProvider = "booking-ids-dp")
+    public void verify_update_booking(String ids) {
+        try {
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/Update.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            BookingDetailsDTO bookingDetailsDTO = mapper.readValue(fileInputStream, BookingDetailsDTO.class);
+
+            System.out.println("DTO : " + bookingDetailsDTO.toString());
+            logger.info("-------------Test Started ------------");
+            final Map<String, Boolean> testSteps = new HashMap<>();
+            testSteps.put(TestSteps.STEP_GET_TOKEN.name(),true);
+            testSteps.put(TestSteps.STEP_UPDATE_BOOKING.name(), true);
+            validateUpdateBooking(testSteps, bookingDetailsDTO,ids);
+            logger.info("--------------Test Ended -------------");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.info(ex);
+            AppAssert.assertTrue(false, "Failure Updating booking");
+        }
+    }
+
+    @Test(groups={"smoke","partialupdate"},dataProvider = "booking-ids-dp")
+    public void verify_partial_update_booking(String ids) {
+        try {
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/PartialUpdate.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            PatchRequestDTO patchRequestDTO = mapper.readValue(fileInputStream, PatchRequestDTO.class);
+
+            System.out.println("DTO : " + patchRequestDTO.toString());
+            logger.info("-------------Test Started ------------");
+            final Map<String, Boolean> testSteps = new HashMap<>();
+            testSteps.put(TestSteps.STEP_GET_TOKEN.name(),true);
+            testSteps.put(TestSteps.STEP_PARTIAL_UPDATE_BOOKING.name(), true);
+            validatePartialUpdateBooking(testSteps, patchRequestDTO,ids);
+            logger.info("--------------Test Ended -------------");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.info(ex);
+            AppAssert.assertTrue(false, "Failure Partial Updating booking");
+        }
+    }
+
+    @Test(groups={"smoke","delete"},dataProvider = "booking-ids-dp")
+    public void verify_delete_booking(String ids) {
+        try {
+            logger.info("-------------Test Started ------------");
+            final Map<String, Boolean> testSteps = new HashMap<>();
+            testSteps.put(TestSteps.STEP_GET_TOKEN.name(),true);
+            testSteps.put(TestSteps.STEP_DELETE_BOOKING.name(),true);
+            validateDeleteBooking(testSteps ,ids);
+            logger.info("--------------Test Ended -------------");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.info(ex);
+            AppAssert.assertTrue(false, "Failure Deleting booking");
+        }
+    }
+
     private void validateGetAllIdTest(Map<String, Boolean> testSteps) throws Exception {
         if (null != testSteps.get(TestSteps.STEP_GET_ALL_BOOKING_ID.name()) && testSteps.get(TestSteps.STEP_GET_ALL_BOOKING_ID.name())) {
             MainUtils.stepLog(logger, TestSteps.STEP_GET_ALL_BOOKING_ID.name());
@@ -182,7 +273,7 @@ public class RestBookingTESTS {
     private void validateGetBookingByIdTest(Map<String, Boolean> testSteps, String id) throws Exception {
         if (null != testSteps.get(TestSteps.STEP_GET_BOOKING_BY_ID.name()) && testSteps.get(TestSteps.STEP_GET_BOOKING_BY_ID.name())) {
             MainUtils.stepLog(logger, TestSteps.STEP_GET_BOOKING_BY_ID.name());
-            final BookingDetailsDTO response = restbookingsHelper.getAllBookingId(id,200)
+            final BookingDetailsDTO response = restbookingsHelper.getBookingById(id,200)
                     .getBody().as(BookingDetailsDTO.class);
             validationHelper.verify_get_booking_by_id(response);
         }
@@ -211,7 +302,7 @@ public class RestBookingTESTS {
             MainUtils.stepLog(logger, TestSteps.STEP_CREATE_BOOKING.name());
             final CreateBookingDTO response = restbookingsHelper.createBooking(requestParams,200)
                     .getBody().as(CreateBookingDTO.class);
-            TestConstants.bookingId=response.getBookingid().toString();
+            TestConstants1.bookingId=response.getBookingid().toString();
             validationHelper.verify_create_booking(response,requestParams);
         }
     }
@@ -221,8 +312,62 @@ public class RestBookingTESTS {
             MainUtils.stepLog(logger, TestSteps.STEP_POST_JSON.name());
             final CreateBookingDTO response = restbookingsHelper.postJson(bookingDetailsDTO,200)
                     .getBody().as(CreateBookingDTO.class);
-            TestConstants.postBookingId=response.getBookingid().toString();
+            TestConstants1.postBookingId=response.getBookingid().toString();
             validationHelper.verify_post_json(response,bookingDetailsDTO);
+        }
+    }
+
+    private void validateGetToken(Map<String, Boolean> testSteps,GetTokenDTO getTokenDTO) throws Exception {
+        if (null != testSteps.get(TestSteps.STEP_GET_TOKEN.name()) && testSteps.get(TestSteps.STEP_GET_TOKEN.name())) {
+            MainUtils.stepLog(logger, TestSteps.STEP_GET_TOKEN.name());
+            final Response response = restbookingsHelper.getToken(getTokenDTO,200);
+            validationHelper.verify_get_token(response);
+        }
+    }
+
+    private void validateUpdateBooking(Map<String, Boolean> testSteps,BookingDetailsDTO bookingDetailsDTO,String ids) throws Exception {
+        if(null != testSteps.get(TestSteps.STEP_GET_TOKEN.name()) && testSteps.get(TestSteps.STEP_GET_TOKEN.name())){
+            MainUtils.stepLog(logger,TestSteps.STEP_GET_TOKEN.name());
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/GetToken.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            GetTokenDTO getTokenDTO = mapper.readValue(fileInputStream, GetTokenDTO.class);
+            final Response response= restbookingsHelper.getToken(getTokenDTO,200);
+        }
+        if (null != testSteps.get(TestSteps.STEP_UPDATE_BOOKING.name()) && testSteps.get(TestSteps.STEP_UPDATE_BOOKING.name())) {
+            MainUtils.stepLog(logger, TestSteps.STEP_UPDATE_BOOKING.name());
+            final BookingDetailsDTO response = restbookingsHelper.updateBooking(bookingDetailsDTO,ids,200)
+                    .getBody().as(BookingDetailsDTO.class);
+            validationHelper.verify_update_booking(response,bookingDetailsDTO);
+        }
+    }
+
+    private void validatePartialUpdateBooking(Map<String, Boolean> testSteps,PatchRequestDTO patchRequestDTO,String ids) throws Exception {
+        if(null != testSteps.get(TestSteps.STEP_GET_TOKEN.name()) && testSteps.get(TestSteps.STEP_GET_TOKEN.name())){
+            MainUtils.stepLog(logger,TestSteps.STEP_GET_TOKEN.name());
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/GetToken.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            GetTokenDTO getTokenDTO = mapper.readValue(fileInputStream, GetTokenDTO.class);
+            final Response response= restbookingsHelper.getToken(getTokenDTO,200);
+        }
+        if (null != testSteps.get(TestSteps.STEP_PARTIAL_UPDATE_BOOKING.name()) && testSteps.get(TestSteps.STEP_PARTIAL_UPDATE_BOOKING.name())) {
+            MainUtils.stepLog(logger, TestSteps.STEP_PARTIAL_UPDATE_BOOKING.name());
+            final BookingDetailsDTO response = restbookingsHelper.partialUpdateBooking(patchRequestDTO,ids,200)
+                    .getBody().as(BookingDetailsDTO.class);
+            validationHelper.verify_partial_update_booking(response,patchRequestDTO);
+        }
+    }
+
+    private void validateDeleteBooking(Map<String, Boolean> testSteps,String ids) throws Exception {
+        if(null != testSteps.get(TestSteps.STEP_GET_TOKEN.name()) && testSteps.get(TestSteps.STEP_GET_TOKEN.name())){
+            MainUtils.stepLog(logger,TestSteps.STEP_GET_TOKEN.name());
+            FileInputStream fileInputStream= new FileInputStream(new File(System.getProperty("user.dir") + "/" + "src/main/resources/GetToken.json"));
+            ObjectMapper mapper = new ObjectMapper();
+            GetTokenDTO getTokenDTO = mapper.readValue(fileInputStream, GetTokenDTO.class);
+            final Response response= restbookingsHelper.getToken(getTokenDTO,200);
+        }
+        if (null != testSteps.get(TestSteps.STEP_DELETE_BOOKING.name()) && testSteps.get(TestSteps.STEP_DELETE_BOOKING.name())) {
+            MainUtils.stepLog(logger, TestSteps.STEP_DELETE_BOOKING.name());
+            final Response response = restbookingsHelper.deleteBooking(ids,201);
         }
     }
 }
