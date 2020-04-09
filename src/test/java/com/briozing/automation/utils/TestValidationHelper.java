@@ -1,10 +1,7 @@
 package com.briozing.automation.utils;
 
 import com.briozing.automation.factory.Log4JFactory;
-import com.briozing.automation.models.BookingDetailsDTO;
-import com.briozing.automation.models.BookingIdDTO;
-import com.briozing.automation.models.CreateBookingDTO;
-import com.briozing.automation.models.PatchRequestDTO;
+import com.briozing.automation.models.*;
 import io.restassured.response.Response;
 import org.apache.log4j.Logger;
 import org.json.*;
@@ -105,6 +102,17 @@ public class TestValidationHelper {
         logger.info("Expected Last Name :- " + patchRequestDTO.getLastname());
         AppAssert.assertEqual(actualResponse.getFirstname(), patchRequestDTO.getFirstname(),"First Name :");
         AppAssert.assertEqual(actualResponse.getLastname(), patchRequestDTO.getLastname(),"Last Name :");
+    }
+
+    public void verify_add_employee(EmployeeResponseVO actualResponse, EmployeeRequestVO employeeRequestVO) {
+        logger.info("Id :- " + actualResponse.getId());
+        AppAssert.assertTrue(String.valueOf(actualResponse.getId()) != null, "Employee Id is not null");
+        logger.info("Name :- " + actualResponse.getName());
+        AppAssert.assertTrue(actualResponse.getName()!= null, "Employee name is not null");
+        logger.info("Email :- " + actualResponse.getEmail());
+        AppAssert.assertTrue(actualResponse.getEmail()!= null, "Employee email is not null");
+        AppAssert.assertEqual(actualResponse.getName(), employeeRequestVO.getName(),"Name : ");
+        AppAssert.assertEqual(actualResponse.getEmail(), employeeRequestVO.getEmail(),"Email : ");
     }
 }
 
